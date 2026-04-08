@@ -1,5 +1,19 @@
 # COMP3314 Image Classification - Project Instructions
 
+
+## ENVIRONMENT SETUP - READ FIRST
+A Python virtual environment is already set up with ALL required packages installed.
+**ALWAYS use the venv Python for ALL python/pip commands:**
+```bash
+source /Users/nivesh/Downloads/hku-comp3314-2026-spring-challenge/venv/bin/activate
+```
+Run this BEFORE any Python command. Or use the full path:
+```bash
+/Users/nivesh/Downloads/hku-comp3314-2026-spring-challenge/venv/bin/python3 script.py
+```
+**DO NOT use system pip or system python3. ALWAYS activate venv first or use venv/bin/python3.**
+Packages already installed: scikit-learn, opencv-python, xgboost, lightgbm, scikit-image, scipy, joblib, matplotlib, seaborn, pandas, pillow, numpy
+
 ## ABSOLUTE RULES - VIOLATION MEANS ZERO POINTS
 1. **NO NEURAL NETWORKS** - No CNNs, RNNs, Transformers, or ANY deep learning. No PyTorch/TensorFlow neural network layers. No backpropagation-trained multi-layer networks. ZERO TOLERANCE.
 2. **NO EXTERNAL DATA** - Only use the 50,000 training images provided in train_ims/
