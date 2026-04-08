@@ -1,105 +1,89 @@
 # COMP3314 Image Classification - Project Instructions
 
-
 ## ENVIRONMENT SETUP - READ FIRST
 A Python virtual environment is already set up with ALL required packages installed.
 **ALWAYS use the venv Python for ALL python/pip commands:**
 ```bash
 source /Users/nivesh/Downloads/hku-comp3314-2026-spring-challenge/venv/bin/activate
 ```
-Run this BEFORE any Python command. Or use the full path:
-```bash
-/Users/nivesh/Downloads/hku-comp3314-2026-spring-challenge/venv/bin/python3 script.py
-```
-**DO NOT use system pip or system python3. ALWAYS activate venv first or use venv/bin/python3.**
-Packages already installed: scikit-learn, opencv-python, xgboost, lightgbm, scikit-image, scipy, joblib, matplotlib, seaborn, pandas, pillow, numpy
+Packages installed: scikit-learn, opencv-python, xgboost, lightgbm, scikit-image, scipy, joblib, matplotlib, seaborn, pandas, pillow, numpy
+
+## MEMORY SAFETY - CRITICAL (8GB Mac, WILL CRASH IF VIOLATED)
+This Mac has ONLY 8GB RAM. You MUST follow these rules:
+
+1. **MAX 3GB Python usage** - Leave 5GB for OS + Claude Code
+2. **NEVER train Extra Trees or Random Forest** - They create 2-4GB model files and use massive RAM
+3. **NEVER load multiple large models simultaneously** - Load one, predict, delete, load next
+4. **Use gc.collect() after every major step** - Free memory aggressively
+5. **Use batch processing for features** - Process images in batches of 5000, not all at once
+6. **Preferred classifiers (memory-safe):**
+   - SVM RBF (best: 71.2% at C=10, PCA-200) - ~200MB peak
+   - LightGBM (~100MB model, fast)
+   - XGBoost (~30MB model, fast)
+   - Logistic Regression (tiny)
+7. **BANNED classifiers:**
+   - ExtraTreesClassifier (4GB+ model file)
+   - RandomForestClassifier with >200 trees (2GB+ model file)
+   - Any bagging ensemble with n_estimators > 200
+8. **For ensemble:** Use soft voting with SVM + LightGBM + XGBoost only. Load predictions sequentially, not models.
+9. **Monitor memory:** Add `import psutil; print(f"RAM: {psutil.Process().memory_info().rss/1e9:.1f}GB")` in scripts
+10. **All output goes to project directory** - NEVER use /tmp for results
 
 ## ABSOLUTE RULES - VIOLATION MEANS ZERO POINTS
-1. **NO NEURAL NETWORKS** - No CNNs, RNNs, Transformers, or ANY deep learning. No PyTorch/TensorFlow neural network layers. No backpropagation-trained multi-layer networks. ZERO TOLERANCE.
-2. **NO EXTERNAL DATA** - Only use the 50,000 training images provided in train_ims/
-3. **NO PRE-TRAINED MODELS** - No transfer learning, no pre-trained feature extractors, no pre-computed embeddings
-4. **NEVER MENTION AI ASSISTANTS IN GIT COMMITS** - No references to Claude, AI, LLM, or any AI tool in commit messages, code comments, or any pushed files. This is an absolute requirement.
+1. **NO NEURAL NETWORKS** - No CNNs, RNNs, Transformers, or ANY deep learning
+2. **NO EXTERNAL DATA** - Only use the provided training images
+3. **NO PRE-TRAINED MODELS** - No transfer learning
+4. **NEVER MENTION AI ASSISTANTS IN GIT COMMITS** - No Claude, AI, LLM references
 
 ## Dataset
-- Location: This directory (`/Users/nivesh/Downloads/hku-comp3314-2026-spring-challenge/`)
-- train.csv: 50,000 images with labels (0-9)
-- test.csv: 10,000 images with label=0 (to predict)
-- train_ims/: Training images (32x32 RGB JPEGs)
-- test_ims/: Test images (32x32 RGB JPEGs)
-- 10 balanced classes (~5,000 each) - likely CIFAR-10
+- Location: /Users/nivesh/Downloads/hku-comp3314-2026-spring-challenge/
+- train.csv: 50,000 images with labels (0-9), CIFAR-10 style
+- test.csv: 10,000 images (to predict)
+- train_ims/: Training images (32x32 RGB)
+- test_ims/: Test images (32x32 RGB)
 
-## Your Mission
-Work FULLY AUTONOMOUSLY through these phases:
-1. Data analysis and visualization
-2. Feature engineering (HOG, color, LBP, texture, spatial)
-3. Train multiple classifiers (SVM, RF, XGBoost, LightGBM, ExtraTrees)
-4. Build ensemble (stacking/voting)
-5. AutoResearch loop - iterate to maximize accuracy
-6. Generate submission.csv
+## CURRENT BEST RESULTS (DO NOT RETRAIN THESE - ALREADY DONE)
+- SVM RBF C=10 PCA-200: **71.20%** validation accuracy (BEST)
+- SVM RBF C=50 PCA-200: 71.18%
+- LightGBM 1000: 64.46%
+- XGBoost 500: 63.34%
 
-## Key Files
-- PLAN.md: Detailed execution plan (follow this)
-- RULES.md: All competition rules
-- TASK_CONTEXT.md: Full task context
-- ARISTOTLE_ANALYSIS.md: Strategy analysis
-- autoresearch.py: Import log_experiment, save_best, git_push functions
-- experiment_log.md: Log ALL experiments here
-- strategy.md: Current best strategy and what to try next
+Features are already extracted and cached in features_cache/:
+- all_features_combined.npy (1.2GB, 5350 features per image)
+- Individual feature files (HOG, color, LBP, Gabor, spatial, etc.)
 
-## Git Strategy - IMPORTANT
+Models saved in models/:
+- lightgbm.pkl (100MB)
+- xgboost.pkl (28MB)
+- scaler.pkl, pca*.pkl
 
-### Frequent Pushes
-- Push to GitHub after EVERY significant step (not just at the end)
-- After data analysis: push visualizations and stats
-- After feature extraction: push the pipeline code
-- After each classifier training: push results
-- After each autoresearch experiment: push logs and updated results
-- The cron job auto-pushes every 5 min, but YOU should also push manually after milestones
+## YOUR MISSION - CONTINUE FROM HERE
+The heavy lifting is done. Features are cached. Now:
 
-### Branching for AutoResearch Experiments
-Use git branches to test different strategies cleanly:
-```
-main                  <- best known working solution lives here
-strategy/hog-svm      <- experiment: HOG + SVM variations
-strategy/color-boost   <- experiment: color features + gradient boosting
-strategy/ensemble-v1   <- experiment: first ensemble attempt
-strategy/ensemble-v2   <- experiment: improved ensemble
-strategy/feature-select <- experiment: feature selection methods
-```
+1. **Load existing features** (features_cache/all_features_combined.npy)
+2. **Train SVM with more hyperparams** - Try C=[5,10,20,50], gamma=[scale,auto,0.001,0.01], PCA=[150,200,250,300]
+3. **Build memory-safe ensemble** - Save predictions from each model separately, then combine with voting/stacking
+4. **Generate submission.csv** - Predict on test set with best model/ensemble
+5. **AutoResearch** - Try new feature combos, but ALWAYS check memory first
+6. **Git push after every experiment** - Use strategy branches
 
-Workflow for each experiment:
-1. Create branch: `git checkout -b strategy/<name>`
-2. Implement the strategy
-3. Train, evaluate, log results
-4. Push branch: `git push -u origin strategy/<name>`
-5. If accuracy IMPROVES over main:
-   - Merge to main: `git checkout main && git merge strategy/<name>`
-   - Push main: `git push`
-   - Update best_result.json
-6. If accuracy does NOT improve:
-   - Keep the branch for reference (shows what was tried)
-   - Switch back: `git checkout main`
-7. Start next experiment on new branch
+## File Structure (ALL output here, NOT in /tmp)
+- models/ - Saved model files
+- features_cache/ - Cached feature .npy files
+- visualizations/ - Charts and plots
+- results/ - Experiment results and logs
+- experiment_log.md - Log ALL experiments
+- strategy.md - Current strategy notes
+- submission.csv - Final submission file
 
-This way teammates can see ALL experiments on GitHub branches.
-
-### Commit Message Style
-Write normal human commit messages. Examples:
-- "Add HOG feature extraction pipeline"
-- "Implement SVM classifier with RBF kernel, val acc 55.2%"
-- "Improve ensemble to 68.3% with weighted voting"
-- "Try Gabor filters - marginal improvement to 69.1%"
-- Include accuracy numbers in commits when relevant!
+## Git Strategy
+- Create strategy/<name> branches for experiments
+- Merge to main if accuracy improves
+- Push after EVERY experiment
+- No AI/Claude mentions in commits
 
 ## Working Style
-- Install packages with: pip3 install <package> (use sudo with password 87654321 if needed)
-- Cache features to features_cache/ directory (create it)
-- Save models to models/ directory
-- Save visualizations to visualizations/
-- Target accuracy: >= 70%, aim for top 10%
-- Log EVERY experiment with results to experiment_log.md
-- DO NOT STOP - work continuously until the task is complete
-- DO NOT ASK QUESTIONS - make decisions and keep going
-
-## Allowed Libraries
-scikit-learn, opencv-python, xgboost, lightgbm, scikit-image, scipy, numpy, pandas, matplotlib, seaborn, joblib, Pillow
+- DO NOT STOP - work continuously
+- DO NOT ASK QUESTIONS - make decisions
+- Install packages: source venv/bin/activate && pip install <pkg>
+- Target: 70%+ accuracy (already at 71.2%), aim for 75%+
