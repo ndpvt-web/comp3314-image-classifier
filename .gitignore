@@ -1,0 +1,13 @@
+train_ims/
+test_ims/
+*.jpg
+*.png
+__pycache__/
+*.pyc
+.DS_Store
+*.pkl
+*.npy
+features_cache/
+.ipynb_checkpoints/
+venv/
+.env
