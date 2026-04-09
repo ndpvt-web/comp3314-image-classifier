@@ -6,7 +6,7 @@ Best config from experiments:
 - Power Transform (Yeo-Johnson)
 - Split PCA: HOG-150 + Other-150 = 300 total dims
 - SVM RBF: C=5, gamma=scale
-- Val accuracy: 74.35%
+- Val accuracy: 74.46%
 """
 import os, sys, time, gc, json
 import numpy as np
@@ -21,7 +21,7 @@ RESULTS = os.path.join(BASE, 'results')
 
 # === CONFIG - Change these for different submissions ===
 HOG_PCA_DIM = 150
-OTHER_PCA_DIM = 150
+OTHER_PCA_DIM = 175
 SVM_C = 5
 SVM_GAMMA = 'scale'
 # =======================================================
@@ -152,7 +152,7 @@ config_info = {
     'other_pca': OTHER_PCA_DIM,
     'svm_c': SVM_C,
     'svm_gamma': SVM_GAMMA,
-    'val_accuracy': 0.7435,
+    'val_accuracy': 0.7446,
     'timestamp': time.strftime('%Y-%m-%d %H:%M:%S')
 }
 with open(os.path.join(RESULTS, 'submission_config.json'), 'w') as f:

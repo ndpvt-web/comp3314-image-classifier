@@ -1,7 +1,7 @@
 # Experiment Log
 
 Automated experiment tracking for COMP3314 Image Classification.
-Current best: SVM RBF C=10 PCA-200 = 71.20% (claimed, unverified)
+Current best: Split PCA HOG-150+Other-175, PT, SVM C=5 = 74.46%
 
 ---
 
@@ -80,6 +80,37 @@ Current best: SVM RBF C=10 PCA-200 = 71.20% (claimed, unverified)
 - **Val accuracy**: 74.35%
 - **Trained on**: All 50k training samples
 - **Test predictions**: 10,000 labels, balanced across 10 classes
+
+---
+
+## Experiment 7: QuantileTransformer + Extended Other PCA [2026-04-09]
+- **Description**: Compare PowerTransform vs QuantileTransformer, test Other PCA 175-200
+- **Key findings**:
+  - PowerTransform Other-175 C=5: 74.35% (ties best)
+  - PowerTransform Other-200 C=5: 74.34% (plateau)
+  - QuantileNormal: 67.09% (MUCH WORSE - destroys distributional structure)
+  - Non-HOG PCA saturates around 150-175 dims
+- **Conclusion**: PowerTransform confirmed as best. No further gains from more Other PCA dims.
+
+---
+
+## Experiment 8: Ensemble of Diverse SVMs [2026-04-09]
+- **Description**: 9 SVMs with different Split PCA configs, majority voting
+- **Best individual**: 74.46% (HOG-150+Other-175, C=5) *** NEW OVERALL BEST ***
+- **Previous best**: 74.35% (HOG-150+Other-150, C=5, exp5)
+- **Improvement**: +0.11%
+- **Individual results**:
+  - HOG-150+Other-175 C=5: 74.46% (BEST)
+  - HOG-150+Other-150 C=5: 74.34%
+  - HOG-150+Other-200 C=5: 74.32%
+  - HOG-175+Other-150 C=5: 74.19%
+  - HOG-150+Other-150 C=3: 74.19%
+  - HOG-150+Other-150 C=10: 74.14%
+  - HOG-125+Other-150 C=5: 74.05%
+  - HOG-150+Other-125 C=5: 74.01%
+  - HOG-200+Other-150 C=5: 73.91%
+- **Ensemble results**: Top-3 voting: 74.41%, Top-5: 74.40%, ALL-9: 74.30%
+- **Conclusion**: Ensemble voting HURT accuracy. Models too similar for diversity benefit. Key finding: Other-175 > Other-150 (+0.12%). New best config: HOG-150+Other-175 C=5.
 
 ---
 
