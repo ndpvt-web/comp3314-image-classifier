@@ -42,11 +42,19 @@ This Mac has ONLY 8GB RAM. You MUST follow these rules:
 - train_ims/: Training images (32x32 RGB)
 - test_ims/: Test images (32x32 RGB)
 
-## CURRENT BEST RESULTS (DO NOT RETRAIN THESE - ALREADY DONE)
-- SVM RBF C=10 PCA-200: **71.20%** validation accuracy (BEST)
-- SVM RBF C=50 PCA-200: 71.18%
+## CURRENT BEST RESULTS
+- Split PCA (HOG-150+Other-150) + PT + SVM C=5: **74.35%** (BEST, submission generated)
+- Unified PCA-245 + PT + SVM C=8: 72.12%
+- Unified PCA-200 + SVM C=8 (no PT): 71.42%
+- SVM RBF C=10 PCA-200 (original): 71.20%
 - LightGBM 1000: 64.46%
 - XGBoost 500: 63.34%
+
+## KEY TECHNIQUE: Split PCA + Power Transform
+The breakthrough was splitting features into HOG (4824d) and non-HOG (526d) groups,
+applying separate PCA to each, then concatenating. Non-HOG features (color, LBP, Gabor,
+spatial, edge) were being crushed in unified PCA. Yeo-Johnson power transform before PCA
+also helps significantly.
 
 Features are already extracted and cached in features_cache/:
 - all_features_combined.npy (1.2GB, 5350 features per image)

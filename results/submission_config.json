@@ -1,0 +1,8 @@
+{
+  "hog_pca": 150,
+  "other_pca": 150,
+  "svm_c": 5,
+  "svm_gamma": "scale",
+  "val_accuracy": 0.7435,
+  "timestamp": "2026-04-09 14:15:16"
+}
